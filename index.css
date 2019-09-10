@@ -1,0 +1,18 @@
+table{
+  border: 1px solid black;
+  max-height: 100vh;
+}
+
+table tr td{
+  width: 40px;
+  height: 40px;
+  border: 1px solid black;
+}
+
+.td-full{
+  background: black;
+}
+
+.apple{
+  background: red;
+}

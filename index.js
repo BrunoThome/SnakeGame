@@ -10,45 +10,64 @@ var POSITIONS = [[10, 5], [10, 6], [10, 7], [10, 8]]
 // var START = POSITIONS[0]
 // var END = POSITIONS[POSITIONS.length - 1]
 
-var SNAKE_SIZE = 3
+var SNAKE_SIZE = 0
 
 var APPLE_POSITION = [[10, 8]]
 
 var APPLE_OWNED = false
 var LAST_DIRECTION = null
 var GAME_OVER = false
+var GAME_STARTED = false
 
-var downHandler
-var upHandler
-var leftHandler
-var rightHandler
+var timerHandler
 var directionHandler
 
 window.onkeydown = (ev) => {
+  console.log(ev.key)
   switch (ev.key) {
     case 'ArrowLeft':
+    case 'a':
       if(LAST_DIRECTION !== 'RIGHT' && !GAME_OVER){
+        if(!GAME_STARTED){
+          timerHandler = setInterval(timer, 1000, 'timer')
+          GAME_STARTED = true
+        }
       LAST_DIRECTION = 'LEFT'
         clearInterval(directionHandler)
       directionHandler = setInterval(() => {handleSnake('left')}, BOARDSETTINGS.SPEED , 'left')
     }
       break
     case 'ArrowRight':
+    case 'd':
       if(LAST_DIRECTION !== 'LEFT' && !GAME_OVER){
+        if(!GAME_STARTED){
+          timerHandler = setInterval(timer, 1000, 'timer')
+          GAME_STARTED = true
+        }
         LAST_DIRECTION = 'RIGHT'
         clearInterval(directionHandler)
       directionHandler = setInterval(() => {handleSnake('right')}, BOARDSETTINGS.SPEED, 'right')
     }
       break
     case 'ArrowUp':
+    case 'w':
       if(LAST_DIRECTION !== 'DOWN' && !GAME_OVER){
+        if(!GAME_STARTED){
+          timerHandler = setInterval(timer, 1000, 'timer')
+          GAME_STARTED = true
+        }
       LAST_DIRECTION = 'UP'
         clearInterval(directionHandler)
       directionHandler = setInterval(() => {handleSnake('up')}, BOARDSETTINGS.SPEED, 'up')
     }
       break
     case 'ArrowDown':
+    case 's':
       if(LAST_DIRECTION !== 'UP' && !GAME_OVER){
+        if(!GAME_STARTED){
+          timerHandler = setInterval(timer, 1000, 'timer')
+          GAME_STARTED = true
+        }
       LAST_DIRECTION = 'DOWN'
         clearInterval(directionHandler)
       directionHandler = setInterval(() => {handleSnake('down')}, BOARDSETTINGS.SPEED, 'down')
@@ -80,6 +99,8 @@ function handleSnake(direction){
       markPointAsSnake(elements)
       if(getApple()){
         expandSnake()
+        SNAKE_SIZE += 1
+        handlePontuation()
       }
 
 }
@@ -121,8 +142,9 @@ function removeMarkAsSnake(elements) {
 function moveToLeft(positions = POSITIONS) {
   start = positions[0]
   newPoint = [start[0], (start[1] - 1)]
-  if(newPoint[1] <= 0){
+  if(newPoint[1] <= 0 || (POSITIONS.includes(newPoint))){
     clearInterval(directionHandler)
+    clearInterval(timerHandler)
     GAME_OVER = true
     console.log('Voce perdeu')
   }else{    
@@ -137,8 +159,9 @@ function moveToLeft(positions = POSITIONS) {
 function moveToRight(positions = POSITIONS) {
   start = positions[0]
   newPoint = [start[0], (start[1] + 1)]
-  if(newPoint[1] > BOARDSETTINGS.COLUMNS){
+  if(newPoint[1] > BOARDSETTINGS.COLUMNS || (POSITIONS.includes(newPoint))){
     clearInterval(directionHandler)
+    clearInterval(timerHandler)
     GAME_OVER = true
     console.log('Você perdeu')
   }else{
@@ -152,8 +175,9 @@ function moveToRight(positions = POSITIONS) {
 function moveToUp(positions = POSITIONS) {
   start = positions[0]
   newPoint = [start[0] - 1, start[1]]
-  if(newPoint[0] <= 0){
+  if(newPoint[0] <= 0 || (POSITIONS.includes(newPoint))){
     clearInterval(directionHandler)
+    clearInterval(timerHandler)
     GAME_OVER = true
     console.log('Voce perdeu')
   }else{    
@@ -167,8 +191,9 @@ function moveToUp(positions = POSITIONS) {
 function moveToDown(positions = POSITIONS) {
   start = positions[0]
   newPoint = [start[0] + 1, start[1]]
-  if(newPoint[0] > BOARDSETTINGS.ROWS){
+  if(newPoint[0] > BOARDSETTINGS.ROWS || (POSITIONS.includes(newPoint))){
     clearInterval(directionHandler)
+    clearInterval(timerHandler)
     GAME_OVER = true
     console.log('Voce perdeu')
   }else{    
@@ -200,5 +225,24 @@ function createAppleInBoard() {
   
 }
 
+function handlePontuation(){
+  const scoreboard = document.querySelector('#scoreboard')
+  scoreboard.innerText = `Pontuação: ${SNAKE_SIZE}`
+}
+
+
+var hours = 0, minutes = 0, seconds = 0
+function timer(display){
+  seconds += 1
+  if(seconds > 60){
+    seconds = 0
+    minutes += 1
+  }
+  if(minutes > 60){
+    minutes = 0
+    hours += 1
+  }
+  document.querySelector(`#${display}`).innerText = `Tempo: ${hours < 10 ? '0'+hours : hours}:${minutes < 10 ? '0'+minutes : minutes}:${seconds < 10 ? '0'+seconds : seconds}`
+}
 
 window.onload = createAppleInBoard

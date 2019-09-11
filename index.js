@@ -1,7 +1,8 @@
 
-const default_position = {
-  START_POSITION_X: 3,
-  START_POSITION_Y: 3,
+var BOARDSETTINGS = {
+  ROWS:12,
+  COLUMNS: 20,
+  SPEED: 250
 }
 
 var POSITIONS = [[10, 5], [10, 6], [10, 7], [10, 8]]
@@ -14,43 +15,44 @@ var SNAKE_SIZE = 3
 var APPLE_POSITION = [[10, 8]]
 
 var APPLE_OWNED = false
-
 var LAST_DIRECTION = null
+var GAME_OVER = false
 
 var downHandler
 var upHandler
 var leftHandler
 var rightHandler
+var directionHandler
 
 window.onkeydown = (ev) => {
   switch (ev.key) {
     case 'ArrowLeft':
-        clearInterval(leftHandler)
-        clearInterval(rightHandler)
-        clearInterval(upHandler)
-        clearInterval(downHandler)
-      leftHandler = setInterval(() => {handleSnake('left')}, 500 , 'left')
+      if(LAST_DIRECTION !== 'RIGHT' && !GAME_OVER){
+      LAST_DIRECTION = 'LEFT'
+        clearInterval(directionHandler)
+      directionHandler = setInterval(() => {handleSnake('left')}, BOARDSETTINGS.SPEED , 'left')
+    }
       break
     case 'ArrowRight':
-        clearInterval(leftHandler)
-        clearInterval(rightHandler)
-        clearInterval(upHandler)
-        clearInterval(downHandler)
-      rightHandler = setInterval(() => {handleSnake('right')}, 500, 'right')
+      if(LAST_DIRECTION !== 'LEFT' && !GAME_OVER){
+        LAST_DIRECTION = 'RIGHT'
+        clearInterval(directionHandler)
+      directionHandler = setInterval(() => {handleSnake('right')}, BOARDSETTINGS.SPEED, 'right')
+    }
       break
     case 'ArrowUp':
-        clearInterval(leftHandler)
-        clearInterval(rightHandler)
-        clearInterval(upHandler)
-        clearInterval(downHandler)
-      upHandler = setInterval(() => {handleSnake('up')}, 500, 'up')
+      if(LAST_DIRECTION !== 'DOWN' && !GAME_OVER){
+      LAST_DIRECTION = 'UP'
+        clearInterval(directionHandler)
+      directionHandler = setInterval(() => {handleSnake('up')}, BOARDSETTINGS.SPEED, 'up')
+    }
       break
     case 'ArrowDown':
-        clearInterval(leftHandler)
-        clearInterval(rightHandler)
-        clearInterval(upHandler)
-        clearInterval(downHandler)
-      downHandler = setInterval(() => {handleSnake('down')}, 500, 'down')
+      if(LAST_DIRECTION !== 'UP' && !GAME_OVER){
+      LAST_DIRECTION = 'DOWN'
+        clearInterval(directionHandler)
+      directionHandler = setInterval(() => {handleSnake('down')}, BOARDSETTINGS.SPEED, 'down')
+    }
       break
   }
 
@@ -76,13 +78,12 @@ function handleSnake(direction){
     }      
       var elements = getElements(positions)
       markPointAsSnake(elements)
+      if(getApple()){
+        expandSnake()
+      }
+
 }
 
-// while(true){
-//   setInterval(moveToLeft)
-// }
-
-// window.onload = createAppleInBoard
 
 function getElements(positions = POSITIONS) {
   elements = positions.map((item) => {
@@ -91,6 +92,18 @@ function getElements(positions = POSITIONS) {
                                       td:nth-child(${[item[1]]})`)
   })
   return elements
+}
+
+function expandSnake(positions = POSITIONS){
+  const end = positions[positions.length - 1]
+  if(LAST_DIRECTION === 'LEFT'){    
+    var newPoint = [end[0], end[1] + 1] 
+  }else{
+    var newPoint = [end[0], end[1] - 1] 
+  }
+  positions.push(newPoint)
+  POSITIONS = positions
+  return positions
 }
 
 function markPointAsSnake(elements) {
@@ -107,48 +120,67 @@ function removeMarkAsSnake(elements) {
 
 function moveToLeft(positions = POSITIONS) {
   start = positions[0]
-  end = positions[positions.length - 1]
   newPoint = [start[0], (start[1] - 1)]
-  positions.pop()
-  positions.unshift(newPoint)
-  POSITIONS = positions
-  return positions
+  if(newPoint[1] <= 0){
+    clearInterval(directionHandler)
+    GAME_OVER = true
+    console.log('Voce perdeu')
+  }else{    
+    positions.pop()
+    positions.unshift(newPoint)
+    POSITIONS = positions
+    return positions
+  }
 }
-
 
 
 function moveToRight(positions = POSITIONS) {
   start = positions[0]
-  end = positions[positions.length - 1]
   newPoint = [start[0], (start[1] + 1)]
-  positions.pop()
-  positions.unshift(newPoint)
-  POSITIONS = positions
-  return positions
+  if(newPoint[1] > BOARDSETTINGS.COLUMNS){
+    clearInterval(directionHandler)
+    GAME_OVER = true
+    console.log('Você perdeu')
+  }else{
+    positions.pop()
+    positions.unshift(newPoint)
+    POSITIONS = positions
+    return positions
+  }
 }
 
 function moveToUp(positions = POSITIONS) {
   start = positions[0]
-  end = positions[positions.length - 1]
   newPoint = [start[0] - 1, start[1]]
-  positions.pop()
-  positions.unshift(newPoint)
-  POSITIONS = positions
-  return positions
+  if(newPoint[0] <= 0){
+    clearInterval(directionHandler)
+    GAME_OVER = true
+    console.log('Voce perdeu')
+  }else{    
+    positions.pop()
+    positions.unshift(newPoint)
+    POSITIONS = positions
+    return positions
+  }
 }
 
 function moveToDown(positions = POSITIONS) {
   start = positions[0]
-  end = positions[positions.length - 1]
   newPoint = [start[0] + 1, start[1]]
-  positions.pop()
-  positions.unshift(newPoint)
-  POSITIONS = positions
-  return positions
+  if(newPoint[0] > BOARDSETTINGS.ROWS){
+    clearInterval(directionHandler)
+    GAME_OVER = true
+    console.log('Voce perdeu')
+  }else{    
+    positions.pop()
+    positions.unshift(newPoint)
+    POSITIONS = positions
+    return positions
+  }
 }
 
-function getApple(snake_position, apple_position = APPLE_POSITION) {
-  if ((snake_position[0] === apple_position[0]) && (snake_position[1] === apple_position[1])) {
+function getApple() {
+  if ((POSITIONS[0][0] === APPLE_POSITION[0]) && (POSITIONS[0][1] === APPLE_POSITION[1])) {
     const oldApple = getElements([APPLE_POSITION])
     oldApple[0].classList.remove('apple')
     createAppleInBoard()
@@ -159,17 +191,14 @@ function getApple(snake_position, apple_position = APPLE_POSITION) {
 }
 
 function createAppleInBoard() {
-  const randomLine = 10
-  const randomColumn = Math.floor((Math.random() * 10) + 1)
+  const randomLine = Math.floor((Math.random() * BOARDSETTINGS.ROWS) + 1)
+  const randomColumn = Math.floor((Math.random() * BOARDSETTINGS.COLUMNS) + 1)
   const appleElement = getElements([[randomLine, randomColumn]])
+  console.log(randomLine, randomColumn)
   APPLE_POSITION = [randomLine, randomColumn]
   appleElement[0].classList.add('apple')
+  
 }
 
-// function startGameSettings(default_position = default_position){
-//   const initial_point = document.querySelector(`table 
-//                                                 tr:nth-child(${default_position.START_POSITION_Y}) 
-//                                                 td:nth-child(${default_position.START_POSITION_X})`)
-//   initial_point.classList.add('td-full')
 
-// }
+window.onload = createAppleInBoard
